@@ -9,6 +9,7 @@ import 'hammerjs';
 
 import { AppComponent } from './app.component';
 import { CoreModule } from './core/core.module';
+import { GravityModule } from './gravity/gravity.module';
 import { FooterComponent } from './footer/footer.component';
 import { HeaderComponent } from './header/header.component';
 import { LeftSideBarComponent } from './left-side-bar/left-side-bar.component';
@@ -36,6 +37,7 @@ import { TwigletsModule } from './twiglets/twiglets.module';
   imports: [
     BrowserModule,
     CoreModule,
+    GravityModule,
     ModelsModule,
     Ng2PageScrollModule.forRoot(),
     NgbModule.forRoot(),

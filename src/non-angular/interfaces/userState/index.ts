@@ -38,6 +38,13 @@ export interface UserState {
   user?: string;
 }
 
+export interface GravityPoint {
+  color: string;
+  name: string;
+  x: number;
+  y: number;
+}
+
 export type ConnectType = 'in' | 'out' | 'both';
 
 export type ScaleType = 'linear' | 'sqrt' | 'power';

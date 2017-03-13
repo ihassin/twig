@@ -6,7 +6,7 @@ import { Map, OrderedMap, fromJS, List } from 'immutable';
 import { element } from 'protractor';
 import { clone, merge } from 'ramda';
 import { Subscription } from 'rxjs/Subscription';
-import { multipleGravities } from '../../../non-angular/d3Forces';
+import { multipleGravities, MultipleGravities } from '../../../non-angular/d3Forces';
 
 // State related
 import {
@@ -618,9 +618,8 @@ export class TwigletGraphComponent implements OnInit, AfterContentInit, OnDestro
   onResize() {
     this.width = this.element.nativeElement.offsetWidth;
     this.height = this.element.nativeElement.offsetHeight;
-    this.simulation
-    .force('x', this.d3.forceX(this.width / 2).strength(this.userState.get('forceGravityX')))
-    .force('y', this.d3.forceY(this.height / 2).strength(this.userState.get('forceGravityY')));
+    (this.simulation.force('multipleCenters') as any as MultipleGravities).centerX(this.width / 2);
+    (this.simulation.force('multipleCenters') as any as MultipleGravities).centerY(this.height / 2);
   }
 
   @HostListener('document:mouseup', [])

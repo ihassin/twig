@@ -10,6 +10,7 @@ export  {
 
 export {
   ConnectType,
+  GravityPoint,
   LinkType,
   Scale,
   ScaleType,

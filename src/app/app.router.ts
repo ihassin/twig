@@ -1,3 +1,4 @@
+import { GravityEditorComponent } from './gravity/gravity-editor/gravity-editor.component';
 import { Routes, RouterModule } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 
@@ -9,6 +10,7 @@ import { TwigletModelViewComponent } from './twiglets/twiglet-model-view/twiglet
 const routes: Routes = [
     { path: '', component: SplashComponent },
     { path: 'twiglet/:name', component: TwigletGraphComponent},
+    { path: 'gravity', component: GravityEditorComponent },
     { path: 'twiglet/:name/view/:view', component: TwigletGraphComponent},
     { path: 'twiglet/:name/model', component: TwigletModelViewComponent },
     { path: 'model/:name', component: ModelViewComponent },

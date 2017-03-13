@@ -29,7 +29,7 @@ function multipleGravities () {
         node.y += (centersOfGravity[node.centerOfGravity].y - node.y) * alpha * strength;
       } else {
         node.x += ((center.x || 0) - node.x) * alpha * strengthX;
-        node.x += ((center.y || 0) - node.y) * alpha * strengthY;
+        node.y += ((center.y || 0) - node.y) * alpha * strengthY;
       }
     });
   };
@@ -74,4 +74,5 @@ function multipleGravities () {
 
 export {
   multipleGravities,
+  MultipleGravities,
 }
