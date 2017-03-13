@@ -49,6 +49,9 @@ export class TwigletService {
 
   private _twigletBackup: Map<string, any> = null;
 
+  private _nodePositions: BehaviorSubject<Map<string, Map<string, any>>>
+    = new BehaviorSubject(undefined);
+
   private isSiteWide: boolean;
 
   constructor(private http: Http,
@@ -101,6 +104,17 @@ export class TwigletService {
    */
   get observable(): Observable<Map<string, any>> {
     return this._twiglet.asObservable();
+  }
+
+  /**
+   * Gets the current location information about the nodes.
+   *
+   * @readonly
+   * @type {Observable<Map<string, Map<string, any>>}
+   * @memberOf TwigletService
+   */
+  get nodeLocations(): Observable<Map<string, Map<string, any>>> {
+    return this._nodePositions.asObservable();
   }
 
   createBackup() {
@@ -351,6 +365,29 @@ export class TwigletService {
    */
   updateNode(updatedNode: D3Node, stateCatcher?: StateCatcher) {
     this.updateNodes([updatedNode], stateCatcher);
+  }
+
+  updateNodeLocations(d3Nodes: { [key: string]: D3Node }) {
+    let twiglet = <Map<string, Map<string, any>>>this._twiglet.getValue().asMutable();
+    Reflect.ownKeys(d3Nodes).forEach(nodeId => {
+      Reflect.ownKeys(d3Nodes[nodeId]).forEach(key => {
+        twiglet = twiglet.setIn(['nodes', nodeId, key], d3Nodes[nodeId][key]);
+      });
+    });
+    this._twiglet.next(twiglet);
+  }
+
+  saveNodeLocations(d3Nodes: D3Node[]) {
+    this._nodePositions.next(fromJS(d3Nodes.reduce((object, node) => {
+      object[node.id] = {
+        fx: node.fx,
+        fy: node.fy,
+        hidden: node.hidden,
+        x: node.x,
+        y: node.y,
+      };
+      return object;
+    }, {})));
   }
 
   /**

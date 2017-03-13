@@ -600,6 +600,7 @@ export class TwigletGraphComponent implements OnInit, AfterContentInit, OnDestro
     this.allNodes.forEach(keepNodeInBounds.bind(this));
     this.updateNodeLocation();
     this.updateLinkLocation();
+    this.stateService.twiglet.saveNodeLocations(this.currentlyGraphedNodes);
   }
 
   /**

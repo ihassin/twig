@@ -11,15 +11,13 @@ import { fromJS, Map, OrderedMap, List } from 'immutable';
 import { View } from '../../interfaces';
 import { Config } from '../../config';
 import { handleError, authSetDataOptions } from '../httpHelpers';
-
-export interface Parent {
-  observable: Observable<Map<string, any>>;
-}
+import { TwigletService } from '../';
 
 export class ViewService {
   private userState;
   private viewsUrl;
-  twigletName = null;
+  private twiglet;
+  private nodeLocations: Map<string, Map<string, any>>;
   /**
    * The actual item being observed. Private to preserve immutability.
    *
@@ -36,16 +34,22 @@ export class ViewService {
   private _events: BehaviorSubject<string> =
       new BehaviorSubject('initial');
 
-  constructor(private http: Http, parent: Parent, private userStateService: UserStateService, private toastr: ToastsManager) {
+  constructor(private http: Http,
+              private twigletService: TwigletService,
+              private userStateService: UserStateService,
+              private toastr: ToastsManager) {
     userStateService.observable.subscribe(response => {
       this.userState = response;
     });
-    parent.observable.subscribe(p => {
-      this.twigletName = p.get('name');
-      if (p.get('views_url') !== this.viewsUrl) {
-        this.viewsUrl = p.get('views_url');
+    twigletService.observable.subscribe(twiglet => {
+      this.twiglet = twiglet;
+      if (twiglet.get('views_url') !== this.viewsUrl) {
+        this.viewsUrl = twiglet.get('views_url');
         this.refreshViews();
       }
+    });
+    twigletService.nodeLocations.subscribe(nodeLocations => {
+      this.nodeLocations = nodeLocations;
     });
   }
 
@@ -67,7 +71,11 @@ export class ViewService {
         const viewUrl = viewsArray.filter(view => view.name === name)[0].url;
         this.userStateService.stopSpinner();
         return this.http.get(viewUrl).map((res: Response) => res.json())
-        .flatMap(response => this.userStateService.loadUserState(response.userState))
+        .flatMap(response => this.userStateService.loadUserState(response.userState).flatMap(() => Observable.of(response)))
+        .flatMap(response => {
+          this.twigletService.updateNodeLocations(response.nodes);
+          return Observable.of(response);
+        })
         .catch(handleError.bind(this));
       });
     }
@@ -101,7 +109,7 @@ export class ViewService {
       name,
       userState: this.prepareViewForSending(),
     };
-    return this.http.post(`${Config.apiUrl}/${Config.twigletsFolder}/${this.twigletName}/views`, viewToSend, authSetDataOptions)
+    return this.http.post(`${Config.apiUrl}/${Config.twigletsFolder}/${this.twiglet.get('name')}/views`, viewToSend, authSetDataOptions)
     .map((res: Response) => res.json())
     .flatMap(newView => {
       this.refreshViews();
