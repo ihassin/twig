@@ -17,3 +17,5 @@ export {
 } from './userState';
 
 export { Model, ModelNode, ModelEntity, ModelNodeAttribute } from './model';
+
+export { Force } from './d3Forces';

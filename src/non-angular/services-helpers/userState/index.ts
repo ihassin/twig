@@ -48,6 +48,7 @@ export class UserStateService {
     forceLinkStrength: 0.5,
     forceVelocityDecay: 0.9,
     formValid: true,
+    gravityPoints: {},
     isEditing: false,
     linkType: 'path',
     mode: 'home',
@@ -378,6 +379,10 @@ export class UserStateService {
    */
   setForceVelocityDecay(number: number) {
     this._userState.next(this._userState.getValue().set('forceVelocityDecay', number));
+  }
+
+  setGravityPoints(gravityPoints) {
+    this._userState.next(this._userState.getValue().set('gravityPoints', fromJS(gravityPoints)));
   }
 
   /**

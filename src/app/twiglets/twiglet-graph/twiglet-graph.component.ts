@@ -6,6 +6,7 @@ import { Map, OrderedMap, fromJS, List } from 'immutable';
 import { element } from 'protractor';
 import { clone, merge } from 'ramda';
 import { Subscription } from 'rxjs/Subscription';
+import { multipleGravities } from '../../../non-angular/d3Forces';
 
 // State related
 import {
@@ -346,8 +347,10 @@ export class TwigletGraphComponent implements OnInit, AfterContentInit, OnDestro
 
   updateSimulation() {
     this.simulation
-    .force('x', this.d3.forceX(this.width / 2).strength(this.userState.get('forceGravityX')))
-    .force('y', this.d3.forceY(this.height / 2).strength(this.userState.get('forceGravityY')))
+    .force('multipleCenters', multipleGravities()
+                                .centerX(this.width / 2).strengthX(this.userState.get('forceGravityX') || 0)
+                                .centerY(this.height / 2).strengthY(this.userState.get('forceGravityY') || 0)
+                                .centersOfGravity(this.userState.get('gravityPoints') || {}).strength(0.1))
     .force('link', (this.simulation.force('link') as ForceLink<any, any> || this.d3.forceLink())
             .distance(this.userState.get('forceLinkDistance') * this.userState.get('scale'))
             .strength(this.userState.get('forceLinkStrength')))

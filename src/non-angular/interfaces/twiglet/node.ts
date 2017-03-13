@@ -2,6 +2,7 @@ import { ModelNodeAttribute } from './../model/index';
 
 export class D3Node {
   attrs?: Array<ModelNodeAttribute>;
+  centerOfGravity?: string;
   color?: string;
   collapsed?: boolean;
   collapsedAutomatically?: boolean;
