@@ -32,7 +32,7 @@ export class GravityEditorComponent implements OnInit, OnDestroy {
         array.push(this.pointsAsObject[key]);
         return array;
       }, []);
-      this.updateGravityPoints();
+      this.simulation.nodes(this.pointsAsArray);
     });
     this.simulation = this.d3.forceSimulation(this.pointsAsArray).on('tick', this.updateGravityPoints.bind(this));
   }
@@ -62,7 +62,6 @@ export class GravityEditorComponent implements OnInit, OnDestroy {
     if (this.simulation.find(this.d3.event.x, this.d3.event.y, this.radius)) {
       return;
     }
-
   }
 
   dragsubject() {
@@ -77,11 +76,13 @@ export class GravityEditorComponent implements OnInit, OnDestroy {
   dragged() {
     this.pointsAsObject[this.d3.event.subject.name].x = this.d3.event.x;
     this.pointsAsObject[this.d3.event.subject.name].y = this.d3.event.y;
-    this.updateGravityPoints.bind(this)();
   }
 
   dragended() {
-    this.stateService.userState.setGravityPoints(this.pointsAsObject);
+    this.stateService.userState.setGravityPoints(this.simulation.nodes().reduce((object, gravityPoint) => {
+      object[gravityPoint.name] = gravityPoint;
+      return object;
+    }, {}));
   }
 
   updateGravityPoints() {

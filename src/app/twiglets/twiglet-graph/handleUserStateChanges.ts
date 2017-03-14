@@ -6,6 +6,7 @@ import { ConnectType, D3Node, Link, UserState } from '../../../non-angular/inter
 import { NodeSearchPipe } from '../../shared/node-search.pipe';
 import { scaleNodes } from './locationHelpers';
 import { TwigletGraphComponent } from './twiglet-graph.component';
+import { MultipleGravities } from '../../../non-angular/d3Forces';
 
 // Event Handlers
 import {
@@ -113,7 +114,8 @@ export function handleUserStateChanges (this: TwigletGraphComponent, response: M
       || oldUserState.get('forceGravityY') !== this.userState.get('forceGravityY')
       || oldUserState.get('forceLinkDistance') !== this.userState.get('forceLinkDistance')
       || oldUserState.get('forceLinkStrength') !== this.userState.get('forceLinkStrength')
-      || oldUserState.get('forceVelocityDecay') !== this.userState.get('forceVelocityDecay')) {
+      || oldUserState.get('forceVelocityDecay') !== this.userState.get('forceVelocityDecay')
+      || oldUserState.get('gravityPoints') !== this.userState.get('gravityPoints')) {
       needToUpdateD3 = true;
     }
     if (needToUpdateD3) {

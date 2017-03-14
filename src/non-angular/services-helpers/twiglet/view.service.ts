@@ -107,6 +107,7 @@ export class ViewService {
     const viewToSend: View = {
       description,
       name,
+      nodes: this.nodeLocations.toJS(),
       userState: this.prepareViewForSending(),
     };
     return this.http.post(`${Config.apiUrl}/${Config.twigletsFolder}/${this.twiglet.get('name')}/views`, viewToSend, authSetDataOptions)
@@ -123,6 +124,7 @@ export class ViewService {
   }
 
   saveView(viewUrl, name, description) {
+
     const viewToSend: View = {
       description,
       name,
