@@ -1,5 +1,6 @@
 import { FormBuilder, FormGroup, FormArray, FormControl } from '@angular/forms';
 import { ChangeDetectionStrategy, Component, Input, OnInit, OnChanges, SimpleChanges, ChangeDetectorRef } from '@angular/core';
+import { fromJS } from 'immutable';
 
 import { StateService } from './../../state.service';
 import { UserState } from './../../../non-angular/interfaces/userState/index';
@@ -11,9 +12,8 @@ import { UserState } from './../../../non-angular/interfaces/userState/index';
   templateUrl: './twiglet-filters.component.html',
 })
 export class TwigletFiltersComponent implements OnInit, OnChanges {
-
   @Input() userState: Map<string, any>;
-  @Input() twiglet: Map<string, any>;
+  @Input() twiglet: Map<string, any> = fromJS({ nodes: [] });
   types: Array<string>;
   keys: Array<string>;
   form: FormArray;

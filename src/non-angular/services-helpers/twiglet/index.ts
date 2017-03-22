@@ -52,6 +52,8 @@ export class TwigletService {
   private _nodeLocations: BehaviorSubject<Map<string, any>> =
     new BehaviorSubject(Map({}));
 
+  private _snapshots = [];
+
   private isSiteWide: boolean;
 
   constructor(private http: Http,
@@ -165,11 +167,17 @@ export class TwigletService {
     const twiglet = this._twiglet.getValue();
     const self = this;
     return this.http.get(`${Config.apiUrl}/${Config.twigletsFolder}/${name}`).map((res: Response) => res.json())
-      .flatMap((results) => this.processLoadedTwiglet.bind(this)(results, viewName)
-      .catch(() => {
-        this.handleError.bind(self);
-        this.userState.stopSpinner();
-      }));
+      .flatMap((results) => {
+        this.http.get(results.snapshots_url).map((res: Response) => res.json()).subscribe(snapshots => {
+          this._snapshots = snapshots;
+          console.log('snapshots loaded');
+        }, (error) => console.error('snapshot error', error));
+        return this.processLoadedTwiglet.bind(this)(results, viewName)
+        .catch(() => {
+          this.handleError.bind(self);
+          this.userState.stopSpinner();
+        });
+      });
   }
 
   /**
@@ -215,6 +223,27 @@ export class TwigletService {
         });
       })
     );
+  }
+
+  playSnapshots() {
+    console.log(this._snapshots.length);
+    this._snapshots.forEach((snapshot, index) => {
+      console.log('snapshot', snapshot.snapshotName, index);
+      setTimeout(() => this.displaySnapshot.bind(this)(snapshot), 5000 * index);
+    });
+  }
+
+  displaySnapshot(twigletAndModel) {
+    const twiglet = this._twiglet.getValue();
+    this._twiglet.next(fromJS({ name: '', nodes: Map({}), links: Map({}) }));
+    this.modelService.setModel(twigletAndModel.model);
+    const newTwiglet = {
+      description: twigletAndModel.snapshotDescription,
+      links: convertArrayToMapForImmutable(twigletAndModel.links as Link[]),
+      name: twigletAndModel.snapshotName,
+      nodes: convertArrayToMapForImmutable(twigletAndModel.nodes as D3Node[]).mergeDeep(this._nodeLocations.getValue()),
+    };
+    this._twiglet.next(fromJS(newTwiglet));
   }
 
   /**

@@ -5,4 +5,8 @@
 <div class="control-group">
   <app-changelog-list *ngIf="userState.get('mode') === 'twiglet'" [changelog]="twigletChangelog"></app-changelog-list>
 </div>
+<div class="divider-line"></div>
+<div class="control-group">
+  <button class="button" (click)="playSnapshots()">Play Snapshots</button>
+</div>
 

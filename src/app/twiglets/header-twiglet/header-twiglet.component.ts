@@ -1,3 +1,4 @@
+import { StateService } from './../../state.service';
 import { Component, Input, OnInit } from '@angular/core';
 
 import { UserState } from './../../../non-angular/interfaces/userState/index';
@@ -14,9 +15,13 @@ export class HeaderTwigletComponent implements OnInit {
   @Input() userState;
   @Input() twigletChangelog;
 
-  constructor() { }
+  constructor(private stateService: StateService) { }
 
   ngOnInit() {
+  }
+
+  playSnapshots() {
+    this.stateService.twiglet.playSnapshots();
   }
 
 }

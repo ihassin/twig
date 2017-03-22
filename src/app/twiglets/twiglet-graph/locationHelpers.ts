@@ -78,5 +78,9 @@ export function scaleNodes(this: TwigletGraphComponent, nodes: D3Node[]) {
     nodes.forEach((node: D3Node) => {
       node.radius = Math.floor(nodeScale(node.connected) * this.userState.get('scale'));
     });
+  } else {
+    nodes.forEach((node: D3Node) => {
+      node.radius = +node.size || +this.model.entities[node.type].size;
+    });
   }
 }
