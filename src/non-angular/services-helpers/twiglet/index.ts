@@ -1,3 +1,4 @@
+
 import { UserState } from './../../interfaces/userState/index';
 import { ModelNodeAttribute } from './../../interfaces/model/index';
 import { OverwriteDialogComponent } from './../../../app/shared/overwrite-dialog/overwrite-dialog.component';
@@ -6,7 +7,7 @@ import { Router } from '@angular/router';
 import { Http, Response, Headers, RequestOptions } from '@angular/http';
 import { Observable, BehaviorSubject } from 'rxjs/Rx';
 import { fromJS, Map, List } from 'immutable';
-import { clone, merge } from 'ramda';
+import { clone, merge, pick } from 'ramda';
 import { ToastsManager } from 'ng2-toastr/ng2-toastr';
 
 import { Twiglet } from './../../interfaces/twiglet';
@@ -314,7 +315,7 @@ export class TwigletService {
       doReplacement: _rev ? true : false,
       links: convertMapToArrayForUploading<Link>(twiglet.get('links')),
       name: twiglet.get('name'),
-      nodes: convertMapToArrayForUploading<D3Node>(twiglet.get('nodes')).map(this.sanitizeNodesAndGetTrueLocation),
+      nodes: convertMapToArrayForUploading<D3Node>(twiglet.get('nodes')).map(this.sanitizeNodesAndGetTrueLocation.bind(this)) as D3Node[],
     };
     const headers = new Headers({ 'Content-Type': 'application/json' });
     const options = new RequestOptions({ headers: headers, withCredentials: true });
@@ -579,21 +580,19 @@ export class TwigletService {
   }
 
   sanitizeNodesAndGetTrueLocation(d3Node: D3Node): D3Node {
-    delete d3Node.depth;
-    delete d3Node.px;
-    delete d3Node.py;
-    delete d3Node.connected;
-    delete d3Node.fixed;
-    delete d3Node.radius;
-    delete d3Node.vx;
-    delete d3Node.vy;
-    delete d3Node.index;
-    delete d3Node.weight;
-    d3Node.attrs = d3Node.attrs.map(cleanAttribute);
-    const nodeLocations = this._nodeLocations.getValue();
-    d3Node.x = nodeLocations.get('x') || d3Node.x;
-    d3Node.y = nodeLocations.get('y') || d3Node.y;
-    return d3Node;
+    const nodeLocation = this._nodeLocations.getValue().get(d3Node.id).toJS();
+    const sanitizedNode = merge(pick([
+      'centerOfGravity',
+      'end_at',
+      'id',
+      'location',
+      'name',
+      'start_at',
+      'type',
+      'id',
+    ]), nodeLocation);
+    sanitizedNode.attrs = d3Node.attrs.map(cleanAttribute);
+    return sanitizedNode;
   }
 }
 

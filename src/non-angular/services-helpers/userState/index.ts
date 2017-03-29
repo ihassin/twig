@@ -48,6 +48,7 @@ export class UserStateService {
     forceLinkStrength: 0.5,
     forceVelocityDecay: 0.9,
     formValid: true,
+    highlightedNode: '',
     isEditing: false,
     linkType: 'path',
     mode: 'home',
@@ -90,12 +91,12 @@ export class UserStateService {
         this.setMode('home');
       }
     });
-    const url = `${Config.apiUrl}/authCheck`;
+    const url = `${Config.apiUrl}/ping`;
     this.http.get(url, authSetDataOptions)
     .map((res: Response) => res.json())
     .subscribe(response => {
       if (response.authenticated) {
-        this._userState.next(this._userState.getValue().set('user', true));
+        this._userState.next(this._userState.getValue().set('user', response.authenticated));
       }
     }, () => undefined);
   }
@@ -523,6 +524,13 @@ export class UserStateService {
 
   setFormValid(bool: boolean) {
     this._userState.next(this._userState.getValue().set('formValid', bool));
+  }
+
+  setHighLightedNode(id: string) {
+    const userState = this._userState.getValue();
+    if (userState.get('highlightedNode') !== id) {
+      this._userState.next(userState.set('highlightedNode', id));
+    }
   }
 
   setActiveTwiglet(bool: boolean) {
