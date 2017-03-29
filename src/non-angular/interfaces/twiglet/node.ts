@@ -25,8 +25,8 @@ export class D3Node {
   size?: string;
   start_at?: string;
   type?: string;
-  vx?: number;
-  vy?: number;
+  sx?: number;
+  sy?: number;
   weight?: number;
   x?: number;
   y?: number;

@@ -29,6 +29,8 @@ import { TwigletModelViewComponent } from './twiglet-model-view/twiglet-model-vi
 import { TwigletNodeListComponent } from './twiglet-node-list/twiglet-node-list.component';
 import { ViewDropdownComponent } from './view-dropdown/view-dropdown.component';
 import { ViewsSaveModalComponent } from './views-save-modal/views-save-modal.component';
+import { TwigletFilterTargetComponent } from './twiglet-filter-target/twiglet-filter-target.component';
+import { TwigletNodeGroupComponent } from './twiglet-node-group/twiglet-node-group.component';
 
 @NgModule({
     declarations: [
@@ -51,6 +53,8 @@ import { ViewsSaveModalComponent } from './views-save-modal/views-save-modal.com
         TwigletNodeListComponent,
         ViewDropdownComponent,
         ViewsSaveModalComponent,
+        TwigletFilterTargetComponent,
+        TwigletNodeGroupComponent,
     ],
     entryComponents: [
         CreateTwigletModalComponent,

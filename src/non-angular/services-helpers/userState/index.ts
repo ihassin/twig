@@ -1,3 +1,5 @@
+import { ViewUserState } from './../../interfaces/twiglet/view';
+import { Inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { Http, Response, Headers, RequestOptions } from '@angular/http';
 import { Simulation } from 'd3-ng2-service';
@@ -10,6 +12,7 @@ import { ConnectType, ScaleType, LinkType, Scale } from '../../interfaces';
 import { Config } from '../../config';
 import { LoadingSpinnerComponent } from './../../../app/shared/loading-spinner/loading-spinner.component';
 import { UserState } from './../../interfaces/userState/index';
+import { authSetDataOptions } from '../httpHelpers';
 
 /**
  * Contains all of the informatio and modifiers about the current user state (what buttons clicked,
@@ -32,15 +35,12 @@ export class UserStateService {
     autoConnectivity: 'in',
     autoScale: 'linear',
     bidirectionalLinks: true,
-    cascadingCollapse: true,
+    cascadingCollapse: false,
     copiedNodeId: null,
     currentNode: null,
     currentViewName: null,
     editTwigletModel: false,
-    filters: Map({
-      attributes: List([]),
-      types: Map({}),
-    }),
+    filters: Map({}),
     forceChargeStrength: 0.1,
     forceGravityX: 0.0,
     forceGravityY: 0.0,
@@ -49,6 +49,7 @@ export class UserStateService {
     forceVelocityDecay: 0.9,
     formValid: true,
     gravityPoints: {},
+    highlightedNode: '',
     isEditing: false,
     linkType: 'path',
     mode: 'home',
@@ -60,7 +61,7 @@ export class UserStateService {
     textToFilterOn: null,
     traverseDepth: 3,
     treeMode: false,
-    user: null
+    user: null,
   });
   /**
    * The actual item being observed, modified. Private to maintain immutability.
@@ -91,6 +92,14 @@ export class UserStateService {
         this.setMode('home');
       }
     });
+    const url = `${Config.apiUrl}/ping`;
+    this.http.get(url, authSetDataOptions)
+    .map((res: Response) => res.json())
+    .subscribe(response => {
+      if (response.authenticated) {
+        this._userState.next(this._userState.getValue().set('user', response.authenticated));
+      }
+    }, () => undefined);
   }
 
 
@@ -173,7 +182,7 @@ export class UserStateService {
     });
   }
 
-  loadUserState(userState: UserState) {
+  loadUserState(userState: ViewUserState) {
     let currentState = this._userState.getValue().asMutable();
     Reflect.ownKeys(userState).forEach(key => {
       currentState = currentState.set(key as string, fromJS(userState[key]));
@@ -433,128 +442,8 @@ export class UserStateService {
     this._userState.next(this._userState.getValue().set('mode', mode));
   }
 
-  toggleTypeFilterActive(type) {
-    const currentTypeValue = this._userState.getValue().get('filters').get('types').get(type);
-    this._userState.next(this._userState.getValue().setIn(['filters', 'types', type], !currentTypeValue));
-  }
-
-  /**
-   * Sets where a type filter is active or not.
-   *
-   * @param {string} type
-   * @param {boolean} active
-   *
-   * @memberOf UserStateService
-   */
-  setTypeFilterIsActive(type: string, active: boolean) {
-    this._userState.next(this._userState.getValue().setIn(['filters', 'types', type], active));
-  }
-
-  /**
-   * Adds the type to the filter, if it is already there, it just activates it.
-   *
-   * @param {string} type
-   *
-   * @memberOf UserStateService
-   */
-  addTypeFilter(type: string) {
-    this.setTypeFilterIsActive(type, true);
-  }
-
-  /**
-   * removes the type filter from the filters, does not simply deactivate it.
-   *
-   * @param {string} type
-   *
-   * @memberOf UserStateService
-   */
-  removeTypeFilter(type: string) {
-    this._userState.next(this._userState.getValue().removeIn(['filters', 'types', type]));
-  }
-
-  /**
-   * Finds the index of the attribute that matches both the key and value.
-   *
-   * @private
-   * @param {any} key
-   * @param {any} value
-   * @returns {number}
-   *
-   * @memberOf UserStateService
-   */
-  private findIndexOfFilterAttribute(key, value): number {
-    const attributes = <List<Map<string, any>>>this._userState.getValue().get('filters').get('attributes');
-    let existingIndex = null;
-    attributes.some((attribute, index) => {
-      if (attribute.get('key') === key && attribute.get('value') === value) {
-        existingIndex = index;
-        return true;
-      }
-      return false;
-    });
-    return existingIndex;
-  }
-
-  /**
-   * Adds an attribute to our filters.
-   *
-   * @param {any} key
-   * @param {any} value
-   *
-   * @memberOf UserStateService
-   */
-  addAttributeFilter(key, value) {
-    const attributes = <List<Map<string, any>>>this._userState.getValue().get('filters').get('attributes');
-    const existingIndex = this.findIndexOfFilterAttribute(key, value);
-    if (existingIndex === null) {
-      const newAttributes = attributes.push(Map({
-        key,
-        value,
-        active: true,
-      }));
-      this._userState.next(this._userState.getValue().setIn(['filters', 'attributes'], newAttributes));
-    } else if (!attributes.get(existingIndex).get('active')) {
-      this.setAttributeFilterIsActive(key, value, true);
-    }
-  }
-
-  /**
-   * Removes an attribute from our filters.
-   *
-   * @param {any} key
-   * @param {any} value
-   *
-   * @memberOf UserStateService
-   */
-  removeAttributeFilter(key, value) {
-    const existingIndex = this.findIndexOfFilterAttribute(key, value);
-    if (existingIndex !== null) {
-      this._userState.next(this._userState.getValue().removeIn(['filters', 'attributes', existingIndex]));
-    }
-  }
-
-  /**
-   * Sets if the attribute filter is active or inactive.
-   *
-   * @param {any} key
-   * @param {any} value
-   * @param {any} active
-   *
-   * @memberOf UserStateService
-   */
-  setAttributeFilterIsActive(key, value, active) {
-    const existingIndex = this.findIndexOfFilterAttribute(key, value);
-    if (existingIndex !== null) {
-      this._userState.next(this._userState.getValue().setIn(['filters', 'attributes', existingIndex, 'active'], active));
-    }
-  }
-
-  toggleAttributeFilterActive(key, value) {
-    const existingIndex = this.findIndexOfFilterAttribute(key, value);
-    if (existingIndex !== null) {
-      const attributeActiveState = this._userState.getValue().get('filters').get('attributes').get(existingIndex).get('active');
-      this._userState.next(this._userState.getValue().setIn(['filters', 'attributes', existingIndex, 'active'], !attributeActiveState));
-    }
+  setFilter(filters: Object) {
+    this._userState.next(this._userState.getValue().set('filters', fromJS(filters)));
   }
 
   /**
@@ -640,6 +529,13 @@ export class UserStateService {
 
   setFormValid(bool: boolean) {
     this._userState.next(this._userState.getValue().set('formValid', bool));
+  }
+
+  setHighLightedNode(id: string) {
+    const userState = this._userState.getValue();
+    if (userState.get('highlightedNode') !== id) {
+      this._userState.next(userState.set('highlightedNode', id));
+    }
   }
 
   setActiveTwiglet(bool: boolean) {

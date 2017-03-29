@@ -1,3 +1,5 @@
+import { ViewNode } from './../../interfaces/twiglet/view';
+import { TwigletService } from './index';
 import { ToastsManager } from 'ng2-toastr/ng2-toastr';
 import { UserStateService } from './../userState/index';
 import { OverwriteDialogComponent } from './../../../app/shared/overwrite-dialog/overwrite-dialog.component';
@@ -7,17 +9,17 @@ import { Router } from '@angular/router';
 import { Observable } from 'rxjs/Observable';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { fromJS, Map, OrderedMap, List } from 'immutable';
+import { pick } from 'ramda';
 
-import { View } from '../../interfaces';
+import { View, ViewUserState } from '../../interfaces';
 import { Config } from '../../config';
 import { handleError, authSetDataOptions } from '../httpHelpers';
-import { TwigletService } from '../';
 
 export class ViewService {
   private userState;
   private viewsUrl;
+  private nodeLocations: Map<string, any>;
   private twiglet;
-  private nodeLocations: Map<string, Map<string, any>>;
   /**
    * The actual item being observed. Private to preserve immutability.
    *
@@ -65,11 +67,10 @@ export class ViewService {
     }
   }
 
-  loadView(viewsUrl, name) {
+  loadView(viewsUrl, name): Observable<View> {
     if (name) {
       return this.http.get(viewsUrl).map((res: Response) => res.json()).flatMap(viewsArray => {
         const viewUrl = viewsArray.filter(view => view.name === name)[0].url;
-        this.userStateService.stopSpinner();
         return this.http.get(viewUrl).map((res: Response) => res.json())
         .flatMap(response => this.userStateService.loadUserState(response.userState).flatMap(() => Observable.of(response)))
         .flatMap(response => {
@@ -79,33 +80,53 @@ export class ViewService {
         .catch(handleError.bind(this));
       });
     }
-    return Observable.of(undefined);
+    return Observable.of({
+      links: {},
+      nodes: {},
+    });
   }
 
-  prepareViewForSending() {
-    const unneededKeys = [
-      'activeModel',
-      'activeTwiglet',
-      'copiedNodeId',
-      'currentViewName',
-      'editTwigletModel',
-      'formValid',
-      'isEditing',
-      'mode',
-      'nodeTypeToBeAdded',
-      'textToFilterOn',
-      'user',
+  prepareViewForSending(): ViewUserState {
+    const requiredKeys = [
+      'autoConnectivity',
+      'autoScale',
+      'bidirectionalLinks',
+      'cascadingCollapse',
+      'currentNode',
+      'filters',
+      'forceChargeStrength',
+      'forceGravityX',
+      'forceGravityY',
+      'forceLinkDistance',
+      'forceLinkStrength',
+      'forceVelocityDecay',
+      'linkType',
+      'nodeSizingAutomatic',
+      'scale',
+      'showLinkLabels',
+      'showNodeLabels',
+      'treeMode',
+      'traverseDepth',
     ];
-    const currentState = this.userState.toJS();
-    unneededKeys.forEach(key => {
-      delete currentState[key];
-    });
-    return currentState;
+    return pick(requiredKeys, this.userState.toJS()) as ViewUserState;
+  }
+
+  prepareLinksForSending() {
+    const requiredKeys = ['source', 'sourceOriginal', 'target', 'targetOriginal'];
+    const links = this.twiglet.get('links') as Map<string, Map<string, any>>;
+    return links.reduce((manyLinks, link) => {
+      manyLinks[link.get('id')] = requiredKeys.reduce((linkObject, key) => {
+        linkObject[key] = link.get(key);
+        return linkObject;
+      }, {});
+      return manyLinks;
+    }, {});
   }
 
   createView(name, description?) {
     const viewToSend: View = {
       description,
+      links: this.prepareLinksForSending(),
       name,
       nodes: this.nodeLocations.toJS(),
       userState: this.prepareViewForSending(),
@@ -127,7 +148,9 @@ export class ViewService {
 
     const viewToSend: View = {
       description,
+      links: this.prepareLinksForSending(),
       name,
+      nodes: this.nodeLocations.toJS(),
       userState: this.prepareViewForSending(),
     };
     return this.http.put(viewUrl, viewToSend, authSetDataOptions)

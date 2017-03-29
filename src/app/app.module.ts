@@ -5,6 +5,7 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { Ng2PageScrollModule } from 'ng2-page-scroll';
 import { ToastModule } from 'ng2-toastr/ng2-toastr';
 
+
 import 'hammerjs';
 
 import { AppComponent } from './app.component';
@@ -27,6 +28,7 @@ import { TwigletsModule } from './twiglets/twiglets.module';
     HeaderComponent,
     LeftSideBarComponent,
     RightSideBarComponent,
+
   ],
   exports: [
     FooterComponent,
