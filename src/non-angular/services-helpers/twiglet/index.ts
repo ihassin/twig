@@ -230,7 +230,7 @@ export class TwigletService {
     console.log(this._snapshots.length);
     this._snapshots.forEach((snapshot, index) => {
       console.log('snapshot', snapshot.snapshotName, index);
-      setTimeout(() => this.displaySnapshot.bind(this)(snapshot), 5000 * index);
+      setTimeout(() => this.displaySnapshot.bind(this)(snapshot), 2000 * index);
     });
   }
 
